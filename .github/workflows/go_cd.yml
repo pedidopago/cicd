@@ -89,6 +89,7 @@ jobs:
         run: |
           git config --global url."https://${USER}:${TOKEN}@github.com/pedidopago".insteadOf "git+ssh://git@github.com/pedidopago" --replace-all
           git config --global url."https://${USER}:${TOKEN}@github.com/pedidopago".insteadOf "https://github.com/pedidopago" --add
+      - run: rm -rf vendor
       - name: Docker Build and Push
         uses: docker/build-push-action@v1
         with:
@@ -98,7 +99,7 @@ jobs:
           repository: ${{ inputs.staging_image_name }}
           tags: ${{ env.STAGING_TAG }},staging
           dockerfile: Dockerfile
-          build_args: GIT_USER=${{ secrets.github_user }},GIT_TOKEN=${{ secrets.github_token }},BRANCH=${{ github.ref }},VERSION=${{ github.sha }}
+          build_args: GIT_USER=${{ secrets.PPGITHUB_USER }},GIT_TOKEN=${{ secrets.PPGITHUB_TOKEN }},BRANCH=${{ github.ref }},VERSION=${{ github.sha }}
   docker_production:
     runs-on: ubuntu-latest
     name: Docker Build (prod)
