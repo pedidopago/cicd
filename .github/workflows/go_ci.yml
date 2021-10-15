@@ -19,10 +19,10 @@ on:
         description: "Run static analysis check"
         required: false
         type: boolean
-      discord_webhook:
-        type: string
-        description: "Discord webhook URL"
+    secrets:
+      DISCORD_WEBHOOK:
         required: false
+        description: "Discord webhook URL"
 jobs:
   pre_setup:
     name: Environment Setup
@@ -80,6 +80,8 @@ jobs:
           MYSQL_DATABASE: ms_temp
         ports:
           - 33306:3306
+    env:
+      DHOOK: ${{ secrets.DISCORD_WEBHOOK }}
     steps:
       - name: Test Go Code
         if: ${{ inputs.run_tests }}
@@ -99,9 +101,9 @@ jobs:
           version: latest
           args: runtestcoverage
       - name: Notify Discord (tests)
-        if: ${{ inputs.discord_webhook != '' }}
+        if: ${{ env.DHOOK != '' }}
         env:
-          DISCORD_WEBHOOK: ${{ inputs.discord_webhook }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         uses: Ilshidur/action-discord@master
         with:
           args: "The tests of {{ EVENT_PAYLOAD.repository.full_name }} have passed!"
@@ -111,9 +113,9 @@ jobs:
           go vet ./...
           $(go env GOPATH)/bin/staticcheck -go 1.16 ./...
       - name: Notify Discord (static analysis)
-        if: ${{ inputs.discord_webhook != '' }}
+        if: ${{ env.DHOOK != '' }}
         env:
-          DISCORD_WEBHOOK: ${{ inputs.discord_webhook }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         uses: Ilshidur/action-discord@master
         with:
           args: "The tests of {{ EVENT_PAYLOAD.repository.full_name }} have passed!"
