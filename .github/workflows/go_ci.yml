@@ -30,19 +30,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Retrieve Git Tokens
-        env:
-          USER: ${{ secrets.github_user }}
-          TOKEN: ${{ secrets.github_token }}
-        run: |
-          git config --global url."https://${TOKEN}@github.com/pedidopago".insteadOf "git+ssh://git@github.com/pedidopago" --replace-all
-          git config --global url."https://${TOKEN}@github.com/pedidopago".insteadOf "https://github.com/pedidopago" --add
-      - name: Checkout code
-        uses: actions/checkout@v2
       - name: Install Go
         uses: WillAbides/setup-go-faster@v1.5.0
         with:
           go-version: 1.16.x
+      # - name: Retrieve Git Tokens
+      #   env:
+      #     USER: ${{ secrets.github_user }}
+      #     TOKEN: ${{ secrets.github_token }}
+      #   run: |
+      #     git config --global url."https://${TOKEN}@github.com/pedidopago".insteadOf "git+ssh://git@github.com/pedidopago" --replace-all
+      #     git config --global url."https://${TOKEN}@github.com/pedidopago".insteadOf "https://github.com/pedidopago" --add
       - uses: actions/cache@v2
         with:
           # In order:
@@ -62,6 +60,8 @@ jobs:
       - name: Build CI binary via Mage
         env:
           BUILD_ENV: ci
+          GOPRIVATE: go.pedidopago.com.br,github.com/pedidopago/*
+          GOPROXY: direct
         uses: magefile/mage-action@v1
         with:
           version: latest
