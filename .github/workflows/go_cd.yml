@@ -63,25 +63,7 @@ on:
         required: false
         description: "AWS secret access key for the production deployment"
 jobs:
-  pre_setup:
-    name: Environment Setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Retrieve Git Tokens
-        env:
-          USER: ${{ secrets.github_user }}
-          TOKEN: ${{ secrets.github_token }}
-        run: |
-          git config --global url."https://${USER}:${TOKEN}@github.com/pedidopago".insteadOf "git+ssh://git@github.com/pedidopago" --replace-all
-          git config --global url."https://${USER}:${TOKEN}@github.com/pedidopago".insteadOf "https://github.com/pedidopago" --add
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Install Go
-        uses: WillAbides/setup-go-faster@v1.5.0
-        with:
-          go-version: 1.16.x
   docker_staging:
-    needs: pre_setup
     runs-on: ubuntu-latest
     name: Docker Build (staging)
     if: ${{ inputs.deploy_to == 'staging' }}
@@ -90,6 +72,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Install Go
+        uses: WillAbides/setup-go-faster@v1.5.0
+        with:
+          go-version: 1.16.x
+      - name: Retrieve Git Tokens
+        env:
+          USER: ${{ secrets.github_user }}
+          TOKEN: ${{ secrets.github_token }}
+        run: |
+          git config --global url."https://${USER}:${TOKEN}@github.com/pedidopago".insteadOf "git+ssh://git@github.com/pedidopago" --replace-all
+          git config --global url."https://${USER}:${TOKEN}@github.com/pedidopago".insteadOf "https://github.com/pedidopago" --add
       - name: Docker Build and Push
         uses: docker/build-push-action@v1
         with:
@@ -101,7 +94,6 @@ jobs:
           dockerfile: Dockerfile
           build_args: GIT_USER=${{ secrets.github_user }},GIT_TOKEN=${{ secrets.github_token }},BRANCH=${{ github.ref }},VERSION=${{ github.sha }}
   docker_production:
-    needs: pre_setup
     runs-on: ubuntu-latest
     name: Docker Build (prod)
     if: ${{ inputs.deploy_to == 'production' }}
@@ -110,6 +102,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Install Go
+        uses: WillAbides/setup-go-faster@v1.5.0
+        with:
+          go-version: 1.16.x
+      - name: Retrieve Git Tokens
+        env:
+          USER: ${{ secrets.github_user }}
+          TOKEN: ${{ secrets.github_token }}
+        run: |
+          git config --global url."https://${USER}:${TOKEN}@github.com/pedidopago".insteadOf "git+ssh://git@github.com/pedidopago" --replace-all
+          git config --global url."https://${USER}:${TOKEN}@github.com/pedidopago".insteadOf "https://github.com/pedidopago" --add
       - name: Push to ECR
         id: ecr
         uses: jwalton/gh-ecr-push@v1

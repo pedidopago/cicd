@@ -24,10 +24,12 @@ on:
         required: false
         description: "Discord webhook URL"
 jobs:
-  pre_setup:
-    name: Environment Setup
+  build:
+    name: Build Go binary (linux x64)
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
       - name: Retrieve Git Tokens
         env:
           USER: ${{ secrets.github_user }}
@@ -41,13 +43,6 @@ jobs:
         uses: WillAbides/setup-go-faster@v1.5.0
         with:
           go-version: 1.16.x
-  build:
-    name: Build Go binary (linux x64)
-    runs-on: ubuntu-latest
-    needs: pre_setup
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
       - uses: actions/cache@v2
         with:
           # In order:
@@ -87,6 +82,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Retrieve Git Tokens
+        env:
+          USER: ${{ secrets.github_user }}
+          TOKEN: ${{ secrets.github_token }}
+        run: |
+          git config --global url."https://${USER}:${TOKEN}@github.com/pedidopago".insteadOf "git+ssh://git@github.com/pedidopago" --replace-all
+          git config --global url."https://${USER}:${TOKEN}@github.com/pedidopago".insteadOf "https://github.com/pedidopago" --add
+      - name: Install Go
+        uses: WillAbides/setup-go-faster@v1.5.0
+        with:
+          go-version: 1.16.x
       - name: Test Go Code
         if: ${{ inputs.run_tests }}
         uses: magefile/mage-action@v1
