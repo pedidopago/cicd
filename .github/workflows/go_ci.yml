@@ -63,7 +63,7 @@ jobs:
         uses: magefile/mage-action@v1
         with:
           version: latest
-          args: build
+          args: cibuild
   test:
     name: Test Go Code
     runs-on: ubuntu-latest
