@@ -19,6 +19,11 @@ on:
         description: "Run static analysis check"
         required: false
         type: boolean
+      run_environment:
+        description: "Run environment (staging/production)"
+        required: false
+        type: string
+        default: staging
     secrets:
       DISCORD_WEBHOOK:
         required: false
@@ -142,7 +147,7 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         uses: Ilshidur/action-discord@master
         with:
-          args: ":Stonks: {{ EVENT_PAYLOAD.repository.full_name }} unit tests"
+          args: "✅ [${{ inputs.run_environment }}] {{ EVENT_PAYLOAD.repository.full_name }} unit tests"
       - name: Run static analysis
         if: ${{ inputs.run_static_analysis }}
         run: |
@@ -154,4 +159,4 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         uses: Ilshidur/action-discord@master
         with:
-          args: ":Stonks: {{ EVENT_PAYLOAD.repository.full_name }} static analysis"
+          args: "✅ [${{ inputs.run_environment }}] {{ EVENT_PAYLOAD.repository.full_name }} static analysis"
