@@ -164,7 +164,7 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         uses: Ilshidur/action-discord@master
         with:
-          args: "[staging] {{ EVENT_PAYLOAD.repository.full_name }} is ready to be deployed by argocd"
+          args: ":Check: [staging] {{ EVENT_PAYLOAD.repository.full_name }} is ready to be deployed by argocd :success:"
   deploy_production:
     runs-on: ubuntu-latest
     needs: docker_production
@@ -197,4 +197,4 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         uses: Ilshidur/action-discord@master
         with:
-          args: "[production] {{ EVENT_PAYLOAD.repository.full_name }} is ready to be deployed by argocd"
+          args: ":Check: [production] {{ EVENT_PAYLOAD.repository.full_name }} is ready to be deployed by argocd :Panik:"
