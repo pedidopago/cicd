@@ -77,6 +77,7 @@ jobs:
         with:
           go-version: 1.16.x
   docker_staging:
+    needs: pre_setup
     runs-on: ubuntu-latest
     name: Docker Build (staging)
     if: ${{ inputs.deploy_to == 'staging' }}
@@ -92,8 +93,9 @@ jobs:
           repository: ${{ inputs.staging_image_name }}
           tags: ${{ env.STAGING_TAG }},staging
           dockerfile: Dockerfile
-          build_args: GIT_USER=${{ secrets.GITHUB_USER }},GIT_TOKEN=${{ secrets.GITHUB_TOKEN }},BRANCH=${{ github.ref }},VERSION=${{ github.sha }}
+          build_args: GIT_USER=${{ secrets.github_user }},GIT_TOKEN=${{ secrets.github_token }},BRANCH=${{ github.ref }},VERSION=${{ github.sha }}
   docker_production:
+    needs: pre_setup
     runs-on: ubuntu-latest
     name: Docker Build (prod)
     if: ${{ inputs.deploy_to == 'production' }}
@@ -135,7 +137,7 @@ jobs:
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.github_token }}
           branch: ${{ github.ref }}
       - name: Notify Discord (staging deployment)
         if: ${{ secrets.DISCORD_WEBHOOK }}
@@ -165,7 +167,7 @@ jobs:
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.github_token }}
           branch: ${{ github.ref }}
       - name: Notify Discord (production deployment)
         if: ${{ secrets.DISCORD_WEBHOOK }}

@@ -19,18 +19,6 @@ on:
       DISCORD_WEBHOOK:
         required: false
         description: "Discord webhook URL"
-      STAGING_DOCKER_USERNAME:
-        required: false
-        description: "private hub username for staging"
-      STAGING_DOCKER_PASSWORD:
-        required: false
-        description: "private hub password for staging"
-      AWS_ACCESS_KEY_ID:
-        required: false
-        description: "AWS access key ID for the production deployment"
-      AWS_SECRET_ACCESS_KEY:
-        required: false
-        description: "AWS secret access key for the production deployment"
 jobs:
   pre_setup:
     name: Environment Setup
