@@ -107,7 +107,7 @@ jobs:
           TEST_DBCS: "root:123456789@tcp(localhost:33306)/ms_temp?parseTime=true&collation=utf8mb4_general_ci&charset=utf8mb4,utf8&multiStatements=true"
         with:
           version: latest
-          args: test
+          args: runalltests
       - name: Check test coverage
         if: ${{ inputs.run_coverage }}
         uses: magefile/mage-action@v1
