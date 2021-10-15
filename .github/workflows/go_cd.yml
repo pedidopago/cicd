@@ -88,6 +88,8 @@ jobs:
     env:
       STAGING_TAG: staging-${{ github.sha }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
       - name: Docker Build and Push
         uses: docker/build-push-action@v1
         with:
@@ -106,6 +108,8 @@ jobs:
     env:
       PROD_TAG: prod-${{ github.sha }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
       - name: Push to ECR
         id: ecr
         uses: jwalton/gh-ecr-push@v1
@@ -160,6 +164,8 @@ jobs:
       PROD_TAG: prod-${{ github.sha }}
       WHOOK: ${{ secrets.DISCORD_WEBHOOK }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
       - name: Update k8s
         run: |
           cd ${{ inputs.prod_k8s_path }}
