@@ -100,6 +100,21 @@ jobs:
         uses: WillAbides/setup-go-faster@v1.5.0
         with:
           go-version: 1.16.x
+      - uses: actions/cache@v2
+        with:
+          # In order:
+          # * Module download cache
+          # * Build cache (Linux)
+          # * Build cache (Mac)
+          # * Build cache (Windows)
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+            ~/Library/Caches/go-build
+            %LocalAppData%\go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
       - name: Test Go Code
         if: ${{ inputs.run_tests }}
         uses: magefile/mage-action@v1
