@@ -142,7 +142,7 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         uses: Ilshidur/action-discord@master
         with:
-          args: "The tests of {{ EVENT_PAYLOAD.repository.full_name }} have passed!"
+          args: "✅ {{ EVENT_PAYLOAD.repository.full_name }} tests ok"
       - name: Run static analysis
         if: ${{ inputs.run_static_analysis }}
         run: |
@@ -154,4 +154,4 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         uses: Ilshidur/action-discord@master
         with:
-          args: "The tests of {{ EVENT_PAYLOAD.repository.full_name }} have passed!"
+          args: "✅ {{ EVENT_PAYLOAD.repository.full_name }} static analysis check ok"
