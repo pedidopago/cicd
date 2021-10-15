@@ -115,6 +115,10 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+      - run: "GO111MODULE=on go get honnef.co/go/tools/cmd/staticcheck"
+      - uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
       - name: Test Go Code
         if: ${{ inputs.run_tests }}
         uses: magefile/mage-action@v1
