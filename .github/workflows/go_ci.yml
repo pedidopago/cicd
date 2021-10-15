@@ -1,0 +1,285 @@
+name: CI
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: "Identifier of CI environment (go/react)"
+        required: true
+        type: string
+      run_tests:
+        description: "Run tests"
+        required: false
+        type: boolean
+      run_coverage:
+        description: "Run test coverage check"
+        required: false
+        type: boolean
+      run_static_analysis:
+        description: "Run static analysis check"
+        required: false
+        type: boolean
+      deploy_to_staging:
+        description: "Run deployments to the staging server"
+        required: false
+        type: boolean
+      deploy_to_production:
+        description: "Run deployments to the production server"
+        required: false
+        type: boolean
+      staging_docker_registry:
+        description: "Docker registry for staging"
+        required: false
+        type: string
+        default: registry.docker.pedidopago.com.br
+      staging_image_name:
+        description: "Docker image name for staging (usually ms/something)"
+        required: false
+        type: string
+        default: todo/replace
+      kustomize_image_name:
+        description: "Kustomize image name to be replaced"
+        required: false
+        type: string
+        default: x-service-image
+      staging_k8s_path:
+        description: "Kubernetes ymls path for staging"
+        required: false
+        type: string
+        default: k8s/staging
+      prod_k8s_path:
+        description: "Kubernetes ymls path for staging"
+        required: false
+        type: string
+        default: k8s/prod
+      prod_ecr_repository:
+        description: "ECR repository for production"
+        required: false
+        type: string
+        default: 123456789.dkr.ecr.us-east-1.amazonaws.com/replace-this
+      prod_ecr_region:
+        description: "ECR region for production"
+        required: false
+        type: string
+        default: us-east-1
+    secrets:
+      DISCORD_WEBHOOK:
+        required: false
+        description: "Discord webhook URL"
+      STAGING_DOCKER_USERNAME:
+        required: false
+        description: "private hub username for staging"
+      STAGING_DOCKER_PASSWORD:
+        required: false
+        description: "private hub password for staging"
+      AWS_ACCESS_KEY_ID:
+        required: false
+        description: "AWS access key ID for the production deployment"
+      AWS_SECRET_ACCESS_KEY:
+        required: false
+        description: "AWS secret access key for the production deployment"
+      # secrets:
+      #   github_user:
+      #     required: true
+      #     type: string
+      #   github_token:
+      #     required: true
+      #     type: string
+    # secrets:
+    #   github_token:
+    #     required: true
+    #     type: string
+jobs:
+  pre_setup:
+    name: Environment Setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Retrieve Git Tokens
+        env:
+          USER: ${{ secrets.github_user }}
+          TOKEN: ${{ secrets.github_token }}
+        run: |
+          git config --global url."https://${USER}:${TOKEN}@github.com/pedidopago".insteadOf "git+ssh://git@github.com/pedidopago" --replace-all
+          git config --global url."https://${USER}:${TOKEN}@github.com/pedidopago".insteadOf "https://github.com/pedidopago" --add
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install Go
+        uses: WillAbides/setup-go-faster@v1.5.0
+        with:
+          go-version: 1.16.x
+  build:
+    name: Build Go binary (linux x64)
+    runs-on: ubuntu-latest
+    needs: pre_setup
+    steps:
+      - uses: actions/cache@v2
+        with:
+          # In order:
+          # * Module download cache
+          # * Build cache (Linux)
+          # * Build cache (Mac)
+          # * Build cache (Windows)
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+            ~/Library/Caches/go-build
+            %LocalAppData%\go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Build CI binary via Mage
+        env:
+          BUILD_ENV: ci
+        uses: magefile/mage-action@v1
+        with:
+          version: latest
+          args: build
+  test:
+    name: Test Go Code
+    runs-on: ubuntu-latest
+    needs: build
+    services:
+      mariadb:
+        image: mariadb:10.5
+        env:
+          MYSQL_ROOT_PASSWORD: "123456789"
+          MYSQL_DATABASE: ms_temp
+        ports:
+          - 33306:3306
+    steps:
+      - name: Test Go Code
+        if: ${{ inputs.run_tests }}
+        uses: magefile/mage-action@v1
+        env:
+          TEST_DBCS: "root:123456789@tcp(localhost:33306)/ms_temp?parseTime=true&collation=utf8mb4_general_ci&charset=utf8mb4,utf8&multiStatements=true"
+        with:
+          version: latest
+          args: test
+      - name: Check test coverage
+        if: ${{ inputs.run_coverage }}
+        uses: magefile/mage-action@v1
+        env:
+          TEST_DBCS: "root:123456789@tcp(localhost:33306)/ms_temp?parseTime=true&collation=utf8mb4_general_ci&charset=utf8mb4,utf8&multiStatements=true"
+          # MIN_TEST_COVERAGE: 9.99 # remove comment to override test coverage
+        with:
+          version: latest
+          args: runtestcoverage
+      - name: Notify Discord (tests)
+        if: ${{ secrets.DISCORD_WEBHOOK }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        uses: Ilshidur/action-discord@master
+        with:
+          args: "The tests of {{ EVENT_PAYLOAD.repository.full_name }} have passed!"
+      - name: Run static analysis
+        if: ${{ inputs.run_static_analysis }}
+        run: |
+          go vet ./...
+          $(go env GOPATH)/bin/staticcheck -go 1.16 ./...
+      - name: Notify Discord (static analysis)
+        if: ${{ secrets.DISCORD_WEBHOOK }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        uses: Ilshidur/action-discord@master
+        with:
+          args: "The tests of {{ EVENT_PAYLOAD.repository.full_name }} have passed!"
+  docker_staging:
+    needs: test
+    runs-on: ubuntu-latest
+    name: Docker Build (staging)
+    if: ${{ inputs.deploy_to_staging }}
+    env:
+      STAGING_TAG: staging-${{ github.sha }}
+    steps:
+      - name: Docker Build and Push
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ secrets.STAGING_DOCKER_USERNAME }}
+          password: ${{ secrets.STAGING_DOCKER_PASSWORD }}
+          registry: ${{ inputs.staging_docker_registry }}
+          repository: ${{ inputs.staging_image_name }}
+          tags: ${{ env.STAGING_TAG }},staging
+          dockerfile: Dockerfile
+          build_args: GIT_USER=${{ secrets.GITHUB_USER }},GIT_TOKEN=${{ secrets.GITHUB_TOKEN }},BRANCH=${{ github.ref }},VERSION=${{ github.sha }}
+  docker_production:
+    needs: test
+    runs-on: ubuntu-latest
+    name: Docker Build (prod)
+    if: ${{ inputs.deploy_to_production }}
+    env:
+      PROD_TAG: prod-${{ github.sha }}
+    steps:
+      - name: Push to ECR
+        id: ecr
+        uses: jwalton/gh-ecr-push@v1
+        with:
+          access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: us-east-1
+          image: ${{ inputs.prod_ecr_repository }}:latest, ${{ inputs.prod_ecr_repository }}:${{ env.PROD_TAG }}
+  deploy_staging:
+    runs-on: ubuntu-latest
+    needs: docker_staging
+    name: Deploy to staging
+    if: ${{ inputs.deploy_to_staging }}
+    env:
+      STAGING_TAG: staging-${{ github.sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Kustomize
+        uses: imranismail/setup-kustomize@v1
+        with:
+          kustomize-version: v3.6.1
+      - name: Update k8s
+        run: |
+          cd ${{ inputs.staging_k8s_path }}
+          kustomize edit set image ${{ inputs.kustomize_image_name }}=${{ inputs.staging_docker_registry }}/${{ inputs.staging_docker_image }}:${{ env.STAGING_TAG }}
+          cat kustomization.yaml
+      - name: Commit k8s
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "CD Action"
+          git commit -am "update kustomize image tag"
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+      - name: Notify Discord (staging deployment)
+        if: ${{ secrets.DISCORD_WEBHOOK }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        uses: Ilshidur/action-discord@master
+        with:
+          args: "[staging] {{ EVENT_PAYLOAD.repository.full_name }} is ready to be deployed by argocd"
+  deploy_production:
+    runs-on: ubuntu-latest
+    needs: docker_production
+    name: Deploy to production
+    if: ${{ inputs.deploy_to_production }}
+    env:
+      PROD_TAG: prod-${{ github.sha }}
+    steps:
+      - name: Update k8s
+        run: |
+          cd ${{ inputs.prod_k8s_path }}
+          kustomize edit set image ${{ inputs.kustomize_image_name }}=${{ inputs.prod_ecr_repository }}:${{ env.PROD_TAG }}
+          cat kustomization.yaml
+      - name: Commit k8s
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "CD Action"
+          git commit -am "update kustomize image tag"
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+      - name: Notify Discord (production deployment)
+        if: ${{ secrets.DISCORD_WEBHOOK }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        uses: Ilshidur/action-discord@master
+        with:
+          args: "[production] {{ EVENT_PAYLOAD.repository.full_name }} is ready to be deployed by argocd"
