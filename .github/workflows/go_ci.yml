@@ -58,6 +58,7 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+      - run: rm -rf vendor
       - name: Build CI binary via Mage
         env:
           BUILD_ENV: ci
