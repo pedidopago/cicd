@@ -34,6 +34,18 @@ on:
       PPGITHUB_TOKEN:
         required: true
         description: "GitHub token"
+      PAGARME_KEY:
+        required: false
+        description: "Payments secrets -> environment variable"
+      PAGARME_CRYPTO:
+        required: false
+        description: "Payments secrets -> environment variable"
+      BILLET_INSTRUCTIONS:
+        required: false
+        description: "Payments secrets -> environment variable"
+      SOFT_DESCRIPTOR:
+        required: false
+        description: "Payments secrets -> environment variable"
 jobs:
   build:
     name: Build Go binary (linux x64)
@@ -129,6 +141,10 @@ jobs:
         uses: magefile/mage-action@v1
         env:
           TEST_DBCS: "root:123456789@tcp(localhost:33306)/ms_temp?parseTime=true&collation=utf8mb4_general_ci&charset=utf8mb4,utf8&multiStatements=true"
+          PAGARME_KEY: ${{ secrets.PAGARME_KEY }}
+          PAGARME_CRYPTO: ${{ secrets.PAGARME_CRYPTO }}
+          BILLET_INSTRUCTIONS: ${{ secrets.BILLET_INSTRUCTIONS }}
+          SOFT_DESCRIPTOR: ${{ secrets.SOFT_DESCRIPTOR }}
         with:
           version: latest
           args: runalltests
@@ -137,6 +153,10 @@ jobs:
         uses: magefile/mage-action@v1
         env:
           TEST_DBCS: "root:123456789@tcp(localhost:33306)/ms_temp?parseTime=true&collation=utf8mb4_general_ci&charset=utf8mb4,utf8&multiStatements=true"
+          PAGARME_KEY: ${{ secrets.PAGARME_KEY }}
+          PAGARME_CRYPTO: ${{ secrets.PAGARME_CRYPTO }}
+          BILLET_INSTRUCTIONS: ${{ secrets.BILLET_INSTRUCTIONS }}
+          SOFT_DESCRIPTOR: ${{ secrets.SOFT_DESCRIPTOR }}
           # MIN_TEST_COVERAGE: 9.99 # remove comment to override test coverage
         with:
           version: latest
