@@ -145,6 +145,8 @@ jobs:
       - uses: actions/checkout@v1
         with:
           fetch-depth: 1
+      - name: Install MJML # dependency of ms-messages
+        run: npm install -g mjml
       - name: Test Go Code
         if: ${{ inputs.run_tests }}
         uses: magefile/mage-action@v1
