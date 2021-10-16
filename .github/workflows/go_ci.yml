@@ -169,6 +169,9 @@ jobs:
           PAGARME_CRYPTO: ${{ secrets.PAGARME_CRYPTO }}
           BILLET_INSTRUCTIONS: ${{ secrets.BILLET_INSTRUCTIONS }}
           SOFT_DESCRIPTOR: ${{ secrets.SOFT_DESCRIPTOR }}
+          TEST_AWS_ID: ${{ secrets.TEST_AWS_ID }}
+          TEST_AWS_KEY: ${{ secrets.TEST_AWS_KEY }}
+          TEST_AWS_SES_REGION: ${{ secrets.TEST_AWS_SES_REGION }}
           # MIN_TEST_COVERAGE: 9.99 # remove comment to override test coverage
         with:
           version: latest
