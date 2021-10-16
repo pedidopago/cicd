@@ -46,6 +46,15 @@ on:
       SOFT_DESCRIPTOR:
         required: false
         description: "Payments secrets -> environment variable"
+      TEST_AWS_ID:
+        required: false
+        description: "MS-Messages secrets -> environment variable"
+      TEST_AWS_KEY:
+        required: false
+        description: "MS-Messages secrets -> environment variable"
+      TEST_AWS_SES_REGION:
+        required: false
+        description: "MS-Messages secrets -> environment variable"
 jobs:
   build:
     name: Build Go binary (linux x64)
@@ -145,6 +154,9 @@ jobs:
           PAGARME_CRYPTO: ${{ secrets.PAGARME_CRYPTO }}
           BILLET_INSTRUCTIONS: ${{ secrets.BILLET_INSTRUCTIONS }}
           SOFT_DESCRIPTOR: ${{ secrets.SOFT_DESCRIPTOR }}
+          TEST_AWS_ID: ${{ secrets.TEST_AWS_ID }}
+          TEST_AWS_KEY: ${{ secrets.TEST_AWS_KEY }}
+          TEST_AWS_SES_REGION: ${{ secrets.TEST_AWS_SES_REGION }}
         with:
           version: latest
           args: runalltests
