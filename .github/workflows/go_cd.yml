@@ -46,6 +46,11 @@ on:
         required: false
         type: string
         default: us-east-1
+      dockerfile:
+        description: "Dockerfile"
+        required: false
+        type: string
+        default: Dockerfile
     secrets:
       DISCORD_WEBHOOK:
         required: false
@@ -98,7 +103,7 @@ jobs:
           registry: ${{ inputs.staging_docker_registry }}
           repository: ${{ inputs.staging_image_name }}
           tags: ${{ env.STAGING_TAG }},staging
-          dockerfile: Dockerfile
+          dockerfile: ${{ inputs.dockerfile }}
           build_args: GIT_USER=${{ secrets.PPGITHUB_USER }},GIT_TOKEN=${{ secrets.PPGITHUB_TOKEN }},BRANCH=${{ github.ref }},VERSION=${{ github.sha }}
   docker_production:
     runs-on: ubuntu-latest
