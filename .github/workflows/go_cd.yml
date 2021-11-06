@@ -151,6 +151,7 @@ jobs:
       - name: Update k8s
         run: |
           cd ${{ inputs.staging_k8s_path }}
+          git pull
           kustomize edit set image ${{ inputs.kustomize_image_name }}=${{ inputs.staging_docker_registry }}/${{ inputs.staging_image_name }}:${{ env.STAGING_TAG }}
           cat kustomization.yaml
       - name: Commit k8s
