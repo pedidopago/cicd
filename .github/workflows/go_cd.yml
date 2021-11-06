@@ -185,6 +185,7 @@ jobs:
       - name: Update k8s
         run: |
           cd ${{ inputs.prod_k8s_path }}
+          git pull
           kustomize edit set image ${{ inputs.kustomize_image_name }}=${{ inputs.prod_ecr_repository }}:${{ env.PROD_TAG }}
           cat kustomization.yaml
       - name: Commit k8s
