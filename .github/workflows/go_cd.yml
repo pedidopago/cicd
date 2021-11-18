@@ -137,7 +137,7 @@ jobs:
           local-image: ${{ inputs.prod_ecr_repository }}:latest
           image: ${{ inputs.prod_ecr_repository }}:latest
       - name: Push to ECR (id)
-        id: ecr
+        id: ecr2
         uses: jwalton/gh-ecr-push@v1
         with:
           access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
