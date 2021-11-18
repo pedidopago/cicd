@@ -126,8 +126,8 @@ jobs:
           git config --global url."https://${USER}:${TOKEN}@github.com/pedidopago".insteadOf "git+ssh://git@github.com/pedidopago" --replace-all
           git config --global url."https://${USER}:${TOKEN}@github.com/pedidopago".insteadOf "https://github.com/pedidopago" --add
       - run: docker build --tag ${{ inputs.prod_ecr_repository }}:latest -f ${{ inputs.dockerfile }} --build-arg GIT_USER=${{ secrets.PPGITHUB_USER }} --build-arg GIT_TOKEN=${{ secrets.PPGITHUB_TOKEN }} --build-arg BRANCH=${{ github.ref }} --build-arg VERSION=${{ github.sha }} .
-      # - run: docker tag ${{ inputs.prod_ecr_repository }}:latest ${{ inputs.prod_ecr_repository }}:${{ env.PROD_TAG }}
-      - name: Push to ECR
+      - run: docker tag ${{ inputs.prod_ecr_repository }}:latest ${{ inputs.prod_ecr_repository }}:${{ env.PROD_TAG }}
+      - name: Push to ECR (latest)
         id: ecr
         uses: jwalton/gh-ecr-push@v1
         with:
@@ -135,7 +135,16 @@ jobs:
           secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           region: us-east-1
           local-image: ${{ inputs.prod_ecr_repository }}:latest
-          image: ${{ inputs.prod_ecr_repository }}:latest, ${{ inputs.prod_ecr_repository }}:${{ env.PROD_TAG }}
+          image: ${{ inputs.prod_ecr_repository }}:latest
+      - name: Push to ECR (id)
+        id: ecr
+        uses: jwalton/gh-ecr-push@v1
+        with:
+          access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: us-east-1
+          local-image: ${{ inputs.prod_ecr_repository }}:latest
+          image: ${{ inputs.prod_ecr_repository }}:${{ env.PROD_TAG }}
   deploy_staging:
     runs-on: ubuntu-latest
     needs: docker_staging
