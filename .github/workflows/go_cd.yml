@@ -126,7 +126,7 @@ jobs:
           git config --global url."https://${USER}:${TOKEN}@github.com/pedidopago".insteadOf "git+ssh://git@github.com/pedidopago" --replace-all
           git config --global url."https://${USER}:${TOKEN}@github.com/pedidopago".insteadOf "https://github.com/pedidopago" --add
       - run: docker build --tag ${{ inputs.prod_ecr_repository }}:latest -f ${{ inputs.dockerfile }} --build-arg GIT_USER=${{ secrets.PPGITHUB_USER }} --build-arg GIT_TOKEN=${{ secrets.PPGITHUB_TOKEN }} --build-arg BRANCH=${{ github.ref }} --build-arg VERSION=${{ github.sha }} .
-      - run: docker tag ${{ inputs.prod_ecr_repository }}:latest ${{ inputs.prod_ecr_repository }}:${{ env.PROD_TAG }}
+      # - run: docker tag ${{ inputs.prod_ecr_repository }}:latest ${{ inputs.prod_ecr_repository }}:${{ env.PROD_TAG }}
       - name: Push to ECR
         id: ecr
         uses: jwalton/gh-ecr-push@v1
