@@ -40,7 +40,12 @@ on:
         description: "ECR repository for production"
         required: false
         type: string
-        default: 123456789.dkr.ecr.us-east-1.amazonaws.com/replace-this
+        default: replace-this
+      prod_ecr_prefix:
+        description: "ECR repository prefix for production"
+        required: false
+        type: string
+        default: 653347587803.dkr.ecr.us-east-1.amazonaws.com/
       prod_ecr_region:
         description: "ECR region for production"
         required: false
@@ -199,7 +204,7 @@ jobs:
         run: |
           cd ${{ inputs.prod_k8s_path }}
           git pull
-          kustomize edit set image ${{ inputs.kustomize_image_name }}=${{ inputs.prod_ecr_repository }}:${{ env.PROD_TAG }}
+          kustomize edit set image ${{ inputs.kustomize_image_name }}=${{ inputs.prod_ecr_prefix }}${{ inputs.prod_ecr_repository }}:${{ env.PROD_TAG }}
           cat kustomization.yaml
       - name: Commit k8s
         run: |
