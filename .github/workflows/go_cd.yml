@@ -134,6 +134,7 @@ jobs:
           access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           region: us-east-1
+          local-image: ${{ inputs.prod_ecr_repository }}
           image: ${{ inputs.prod_ecr_repository }}:latest
       - name: Push CommitHash Tag to ECR
         id: ecr2
@@ -142,6 +143,7 @@ jobs:
           access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           region: us-east-1
+          local-image: ${{ inputs.prod_ecr_repository }}
           image: ${{ inputs.prod_ecr_repository }}:${{ env.PROD_TAG }}
   deploy_staging:
     runs-on: ubuntu-latest
