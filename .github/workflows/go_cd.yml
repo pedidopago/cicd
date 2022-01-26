@@ -149,6 +149,7 @@ jobs:
         uses: Ilshidur/action-discord@master
         with:
           args: "✅ [staging] **{{ EVENT_PAYLOAD.repository.full_name }}** is ready to be deployed by argocd\n\n💾 `${{ inputs.staging_docker_registry }}/${{ inputs.staging_image_name }}:${{ env.STAGING_TAG }}`\n🔗 {{ EVENT_PAYLOAD.repository.url }}"
+        continue-on-error: true
   docker_production:
     runs-on: ubuntu-latest
     name: Docker Build (prod)
@@ -223,3 +224,4 @@ jobs:
         uses: Ilshidur/action-discord@master
         with:
           args: "✅ [production] **{{ EVENT_PAYLOAD.repository.full_name }}** is ready to be deployed by argocd\n\n💾 `${{ inputs.prod_ecr_repository }}:${{ env.PROD_TAG }}`\n🔗 {{ EVENT_PAYLOAD.repository.url }}"
+        continue-on-error: true
