@@ -93,6 +93,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
       - run: rm -rf vendor
+      - uses: bufbuild/buf-setup-action@v0.6.0
       - name: Build CI binary via Mage
         env:
           BUILD_ENV: ci
