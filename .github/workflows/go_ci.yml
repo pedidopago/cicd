@@ -92,7 +92,7 @@ jobs:
       - name: Build CI binary via Mage
         env:
           BUILD_ENV: ci
-          GOPRIVATE: go.pedidopago.com.br,github.com/pedidopago/*
+          GOPRIVATE: go.pedidopago.com.br,github.com/pedidopago/*,go.buf.build
           GOPROXY: direct
         uses: magefile/mage-action@v1
         with:
