@@ -94,6 +94,7 @@ jobs:
             ${{ runner.os }}-go-
       - run: rm -rf vendor
       - uses: bufbuild/buf-setup-action@v0.6.0
+      - run: echo ${BUF_TOKEN} | buf registry login --username gabs --token-stdin
       - name: Build CI binary via Mage
         env:
           BUILD_ENV: ci
