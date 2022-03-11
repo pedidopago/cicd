@@ -3,6 +3,7 @@ name: CI
 env:
   GOPRIVATE: go.pedidopago.com.br,github.com/pedidopago/*,go.buf.build
   GOPROXY: direct
+  BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
 
 on:
   workflow_call:
