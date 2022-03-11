@@ -1,7 +1,7 @@
 name: CI
 
 env:
-  GOPRIVATE: go.pedidopago.com.br,github.com/pedidopago/*
+  GOPRIVATE: go.pedidopago.com.br,github.com/pedidopago/*,go.buf.build
   GOPROXY: direct
 
 on:
