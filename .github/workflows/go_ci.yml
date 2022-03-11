@@ -73,6 +73,7 @@ jobs:
         run: |
           git config --global url."https://${USER}:${TOKEN}@github.com/pedidopago".insteadOf "git+ssh://git@github.com/pedidopago" --replace-all
           git config --global url."https://${USER}:${TOKEN}@github.com/pedidopago".insteadOf "https://github.com/pedidopago" --add
+          git config --global url."https://${USER}:${TOKEN}@go.buf.build".insteadOf "https://go.buf.build" --add
       - uses: actions/cache@v2
         with:
           # In order:
