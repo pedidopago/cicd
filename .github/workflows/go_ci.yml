@@ -142,7 +142,7 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - run: "GO111MODULE=on go get honnef.co/go/tools/cmd/staticcheck"
+      - run: "GO111MODULE=on go install -v honnef.co/go/tools/cmd/staticcheck"
       - uses: actions/checkout@v1
         with:
           fetch-depth: 1
