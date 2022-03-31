@@ -142,7 +142,6 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      # - run: "GO111MODULE=on go install -v honnef.co/go/tools/cmd/staticcheck"
       - uses: actions/checkout@v1
         with:
           fetch-depth: 1
@@ -191,10 +190,8 @@ jobs:
         if: ${{ inputs.run_static_analysis }}
         run: |
           go vet ./...
-          go get honnef.co/go/tools
-          go mod download honnef.co/go/tools
-          go mod tidy
-          go run honnef.co/go/tools/cmd/staticcheck -go 1.18 ./...
+          go install honnef.co/go/tools/cmd/staticcheck@latest
+          staticcheck -go 1.18 ./...
       - name: Notify Discord (static analysis)
         if: ${{ env.DHOOK != '' }}
         env:
