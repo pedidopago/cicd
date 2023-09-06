@@ -95,7 +95,7 @@ jobs:
           BUILD_ENV: ci
           GOPRIVATE: go.pedidopago.com.br,github.com/pedidopago/*,go.buf.build
           GOPROXY: direct
-        uses: magefile/mage-action@v1
+        uses: magefile/mage-action@v2
         with:
           version: latest
           args: cibuild
@@ -149,7 +149,7 @@ jobs:
         run: npm install -g mjml
       - name: Test Go Code
         if: ${{ inputs.run_tests }}
-        uses: magefile/mage-action@v1
+        uses: magefile/mage-action@v2
         env:
           TEST_DBCS: "root:123456789@tcp(localhost:33306)/ms_temp?parseTime=true&collation=utf8mb4_general_ci&charset=utf8mb4,utf8&multiStatements=true"
           PAGARME_KEY: ${{ secrets.PAGARME_KEY }}
@@ -164,7 +164,7 @@ jobs:
           args: runalltests
       - name: Check test coverage
         if: ${{ inputs.run_coverage }}
-        uses: magefile/mage-action@v1
+        uses: magefile/mage-action@v2
         env:
           TEST_DBCS: "root:123456789@tcp(localhost:33306)/ms_temp?parseTime=true&collation=utf8mb4_general_ci&charset=utf8mb4,utf8&multiStatements=true"
           PAGARME_KEY: ${{ secrets.PAGARME_KEY }}
