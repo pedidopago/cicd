@@ -1,0 +1,132 @@
+name: CD
+
+env:
+  GOPRIVATE: go.pedidopago.com.br,github.com/pedidopago/*,go.buf.build
+  GOPROXY: direct
+
+on:
+  workflow_call:
+    inputs:
+      deploy_to:
+        description: "Run deployments to staging"
+        required: false
+        type: string
+      staging_docker_registry:
+        description: "Docker registry for staging"
+        required: false
+        type: string
+        default: registry.docker.pedidopago.com.br
+      staging_image_name:
+        description: "Docker image name for staging (usually ms/something)"
+        required: false
+        type: string
+        default: todo/replace
+      kustomize_image_name:
+        description: "Kustomize image name to be replaced"
+        required: false
+        type: string
+        default: x-service-image
+      staging_k8s_path:
+        description: "Kubernetes ymls path for staging"
+        required: false
+        type: string
+        default: k8s/staging
+      dockerfile:
+        description: "Dockerfile"
+        required: false
+        type: string
+        default: Dockerfile
+    secrets:
+      DISCORD_WEBHOOK:
+        required: false
+        description: "Discord webhook URL"
+      STAGING_DOCKER_USERNAME:
+        required: false
+        description: "private hub username for staging"
+      STAGING_DOCKER_PASSWORD:
+        required: false
+        description: "private hub password for staging"
+      AWS_ACCESS_KEY_ID:
+        required: false
+        description: "AWS access key ID for the production deployment"
+      AWS_SECRET_ACCESS_KEY:
+        required: false
+        description: "AWS secret access key for the production deployment"
+      PPGITHUB_USER:
+        required: true
+        description: "GitHub username"
+      PPGITHUB_TOKEN:
+        required: true
+        description: "GitHub token"
+jobs:
+  docker_staging:
+    runs-on: ubuntu-latest
+    name: Docker Build (staging)
+    if: ${{ inputs.deploy_to == 'staging' }}
+    env:
+      STAGING_TAG: staging-${{ github.sha }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install Go
+        uses: WillAbides/setup-go-faster@v1.5.0
+        with:
+          go-version: 1.21.x
+      - name: Retrieve Git Tokens
+        env:
+          USER: ${{ secrets.PPGITHUB_USER }}
+          TOKEN: ${{ secrets.PPGITHUB_TOKEN }}
+        run: |
+          git config --global url."https://${USER}:${TOKEN}@github.com/pedidopago".insteadOf "git+ssh://git@github.com/pedidopago" --replace-all
+          git config --global url."https://${USER}:${TOKEN}@github.com/pedidopago".insteadOf "https://github.com/pedidopago" --add
+      - run: rm -rf vendor
+      - name: Docker Build and Push
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ secrets.STAGING_DOCKER_USERNAME }}
+          password: ${{ secrets.STAGING_DOCKER_PASSWORD }}
+          registry: ${{ inputs.staging_docker_registry }}
+          repository: ${{ inputs.staging_image_name }}
+          tags: ${{ env.STAGING_TAG }},staging
+          dockerfile: ${{ inputs.dockerfile }}
+          build_args: GIT_USER=${{ secrets.PPGITHUB_USER }},GIT_TOKEN=${{ secrets.PPGITHUB_TOKEN }},BRANCH=${{ github.ref }},VERSION=${{ github.sha }}
+  deploy_staging:
+    runs-on: ubuntu-latest
+    needs: docker_staging
+    name: Deploy to staging
+    if: ${{ inputs.deploy_to == 'staging' }}
+    env:
+      STAGING_TAG: staging-${{ github.sha }}
+      WHOOK: ${{ secrets.DISCORD_WEBHOOK}}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Kustomize
+        uses: imranismail/setup-kustomize@v1
+        with:
+          kustomize-version: v3.6.1
+      - name: Update k8s
+        run: |
+          cd ${{ inputs.staging_k8s_path }}
+          git pull
+          kustomize edit set image ${{ inputs.kustomize_image_name }}=${{ inputs.staging_docker_registry }}/${{ inputs.staging_image_name }}:${{ env.STAGING_TAG }}
+          cat kustomization.yaml
+      - name: Commit k8s
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "CD Action"
+          git commit -am "update kustomize image tag"
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.github_token }}
+          branch: ${{ github.ref }}
+      - name: Notify Discord (staging deployment)
+        if: ${{ env.WHOOK != '' }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          STAGING_TAG: staging-${{ github.sha }}
+        uses: Ilshidur/action-discord@master
+        with:
+          args: "✅ [staging] **{{ EVENT_PAYLOAD.repository.full_name }}** is ready to be deployed by argocd\n\n💾 `${{ inputs.staging_docker_registry }}/${{ inputs.staging_image_name }}:${{ env.STAGING_TAG }}`\n🔗 {{ EVENT_PAYLOAD.repository.url }}"
+        continue-on-error: true
