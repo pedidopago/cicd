@@ -4,6 +4,7 @@ env:
   GOPRIVATE: go.pedidopago.com.br,github.com/pedidopago/*,go.buf.build
   GOPROXY: direct
   BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
+  GOLANG_PROTOBUF_REGISTRATION_CONFLICT: ignore
 
 on:
   workflow_call:
