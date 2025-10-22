@@ -72,11 +72,13 @@ jobs:
       - name: Install Go
         uses: WillAbides/setup-go-faster@v1.9.1
         with:
-          go-version: 1.21.x
+          go-version: 1.21.9
       - name: Retrieve Git Tokens
         env:
           USER: ${{ secrets.PPGITHUB_USER }}
           TOKEN: ${{ secrets.PPGITHUB_TOKEN }}
+          ACTIONS_RUNNER_DEBUG: true
+          ACTIONS_STEP_DEBUG: true
         run: |
           git config --global url."https://${USER}:${TOKEN}@github.com/pedidopago".insteadOf "git+ssh://git@github.com/pedidopago" --replace-all
           git config --global url."https://${USER}:${TOKEN}@github.com/pedidopago".insteadOf "https://github.com/pedidopago" --add
