@@ -22,7 +22,7 @@ on:
         required: false
         type: boolean
       run_environment:
-        description: "Run environment (staging/production)"
+        description: "Run environment (staging/production/develop)"
         required: false
         type: string
         default: staging
