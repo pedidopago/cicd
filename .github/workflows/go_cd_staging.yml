@@ -31,6 +31,11 @@ on:
         required: false
         type: string
         default: k8s/staging
+      extra_k8s_path:
+        description: "Kubernetes ymls path for extra (optional)"
+        required: false
+        type: string
+        default: k8s/staging
       dockerfile:
         description: "Dockerfile"
         required: false
@@ -108,6 +113,13 @@ jobs:
       - name: Update k8s
         run: |
           cd ${{ inputs.staging_k8s_path }}
+          git pull
+          kustomize edit set image ${{ inputs.kustomize_image_name }}=${{ inputs.staging_docker_registry }}/${{ inputs.staging_image_name }}:${{ env.STAGING_TAG }}
+          cat kustomization.yaml
+      - name: Update k8s (extra)
+        if: ${{ inputs.extra_k8s_path != 'k8s/staging'}}
+        run: |
+          cd ${{ inputs.extra_k8s_path }}
           git pull
           kustomize edit set image ${{ inputs.kustomize_image_name }}=${{ inputs.staging_docker_registry }}/${{ inputs.staging_image_name }}:${{ env.STAGING_TAG }}
           cat kustomization.yaml
