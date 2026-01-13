@@ -37,6 +37,11 @@ on:
         required: true
         type: string
         default: "staging"
+      extra_k8s_path:
+        description: "Kubernetes ymls path for extra (optional)"
+        required: false
+        type: string
+        default: k8s/staging
       prod_k8s_path:
         description: "Kubernetes ymls path for staging"
         required: false

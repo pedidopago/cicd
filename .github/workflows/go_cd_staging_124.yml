@@ -32,6 +32,16 @@ on:
         required: false
         type: string
         default: k8s/staging
+      extra_k8s_path:
+        description: "Kubernetes ymls path for extra (optional)"
+        required: false
+        type: string
+        default: k8s/staging
+      extra_docker_tag_suffix:
+        description: "An extra tag to be added to the docker image"
+        required: true
+        type: string
+        default: "staging"
       dockerfile:
         description: "Dockerfile"
         required: false
@@ -88,7 +98,7 @@ jobs:
           password: ${{ secrets.STAGING_DOCKER_PASSWORD }}
           registry: ${{ inputs.staging_docker_registry }}
           repository: ${{ inputs.staging_image_name }}
-          tags: ${{ env.STAGING_TAG }},staging
+          tags: ${{ env.STAGING_TAG }},${{ inputs.extra_docker_tag_suffix }}
           dockerfile: ${{ inputs.dockerfile }}
           build_args: GIT_USER=${{ secrets.PPGITHUB_USER }},GIT_TOKEN=${{ secrets.PPGITHUB_TOKEN }},BRANCH=${{ github.ref }},VERSION=${{ github.sha }}
   deploy_staging:
