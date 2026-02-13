@@ -1,0 +1,50 @@
+name: Docker Build and Push
+description: |
+  Builds and pushes a docker image.
+inputs:
+  build_strategy:
+    required: true
+    description: The build strategy to use (docker|aws).
+    default: docker
+  docker_registry:
+    required: false
+    description: |
+      The docker registry to build+push the image to.
+      For AWS this is usually <account-id>.dkr.ecr.<region>.amazonaws.com
+  docker_username:
+    required: false
+    description: |
+      The username to use for the docker registry.
+      For AWS, this is the AWS access key ID.
+  docker_password:
+    required: false
+    description: |
+      The password to use for the docker registry.
+      For AWS, this is the AWS secret access key.
+  docker_image_name:
+    required: true
+    description: The AWS docker image name to build+push the image to.
+  docker_tag_push:
+    required: true
+    description: The tag to push the image to.
+runs:
+  using: composite
+  steps:
+    - name: Go Mod Vendor
+      shell: bash
+      run: go mod vendor
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    - name: Docker Login
+      uses: docker/login-action@v2
+      with:
+        registry: ${{ inputs.docker_registry }}
+        username: ${{ inputs.docker_username }}
+        password: ${{ inputs.docker_password }}
+    - name: Docker Build and Push
+      uses: docker/build-push-action@v4
+      with:
+        context: "."
+        push: true
+        tags: ${{ inputs.docker_registry }}/${{ inputs.docker_image_name }}:${{ inputs.docker_tag_push }}
+        # can have multiple tags is sepparated by a comma
