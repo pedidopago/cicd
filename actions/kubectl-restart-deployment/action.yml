@@ -1,0 +1,31 @@
+name: Restart Deployment
+description: |
+  Forces a redeployment (rollout restart)
+inputs:
+  kube_config_b64:
+    description: The kube config in base64 format
+    required: true
+  deployment_name:
+    description: The Deployment Name
+    required: true
+  namespace:
+    description: The K8S Namespace
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: "v1.31.13"
+    - name: Configure kubectl
+      shell: bash
+      run: |
+        # Create the .kube directory and write the secret to the config file
+        mkdir -p ~/.kube
+        echo "${{ inputs.kube_config_b64 }}" | base64 -d > ~/.kube/config
+    - name: Run kubectl rollout restart
+      shell: bash
+      run: |
+        kubectl rollout restart deployment/${{ inputs.deployment_name }} -n ${{ inputs.namespace }}
+        kubectl rollout status deployment/${{ inputs.deployment_name }} -n ${{ inputs.namespace }}
