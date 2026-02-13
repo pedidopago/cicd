@@ -17,11 +17,6 @@ runs:
       shell: bash
       run: |
         go install github.com/pedidopago/migrate-cli/cmd/migrate-mariadb@master
-    - name: Print go env
-      shell: bash
-      run: |
-        go env
-        ls $(go env GOPATH)/bin
     - name: Migrate
       shell: bash
       run: |
