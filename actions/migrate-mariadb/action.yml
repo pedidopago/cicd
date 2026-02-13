@@ -17,12 +17,12 @@ runs:
       shell: bash
       run: |
         go install github.com/pedidopago/migrate-cli/cmd/migrate-mariadb@master
-        export PATH=${PATH}:`go env GOPATH`/bin
     - name: Print go env
       shell: bash
       run: |
         go env
+        ls $(go env GOPATH)/bin
     - name: Migrate
       shell: bash
       run: |
-        migrate-mariadb --database-url="${{ inputs.database_url }}" --migrations="${{ inputs.migration_url }}" --command="${{ inputs.migration_command }}"
+        $(go env GOPATH)/bin/migrate-mariadb --database-url="${{ inputs.database_url }}" --migrations="${{ inputs.migration_url }}" --command="${{ inputs.migration_command }}"
