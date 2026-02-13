@@ -20,4 +20,4 @@ runs:
     - name: Migrate
       shell: bash
       run: |
-        migrate-mariadb --database-url="${{ inputs.database_url }}" --migrations="${{ inputs.migration_url }}" --command="${{ inputs.migration_command }}"
+        go run github.com/pedidopago/migrate-cli/cmd/migrate-mariadb --database-url="${{ inputs.database_url }}" --migrations="${{ inputs.migration_url }}" --command="${{ inputs.migration_command }}"
