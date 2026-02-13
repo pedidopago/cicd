@@ -1,0 +1,23 @@
+name: Migrate MariaDB
+description: Migrate using github.com/pedidopago/migrate-cli
+inputs:
+  database_url:
+    required: true
+    description: Database URL to connect to
+  migration_url:
+    required: true
+    description: "Migration URL to connect to (eg: file://path/to/migrations)"
+  migration_command:
+    required: true
+    description: "Migration command to execute (eg: up, down, sync)"
+runs:
+  using: composite
+  steps:
+    - name: Install migrate-cli
+      shell: bash
+      run: |
+        go install github.com/pedidopago/migrate-cli/cmd/migrate-mariadb@latest
+    - name: Migrate
+      shell: bash
+      run: |
+        migrate-mariadb --database-url="${{ inputs.database_url }}" --migrations="${{ inputs.migration_url }}" --command="${{ inputs.migration_command }}"
