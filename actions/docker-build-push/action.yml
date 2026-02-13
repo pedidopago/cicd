@@ -23,6 +23,14 @@ inputs:
   docker_tag_push:
     required: true
     description: The tag to push the image to.
+  docker_arg_branch:
+    required: false
+    description: The arg BRANCH will be sent to the docker image.
+    default: dev
+  docker_arg_version:
+    required: false
+    description: The arg VERSION will be sent to the docker image.
+    default: latest
 runs:
   using: composite
   steps:
@@ -43,4 +51,8 @@ runs:
         context: "."
         push: true
         tags: ${{ inputs.docker_registry }}/${{ inputs.docker_image_name }}:${{ inputs.docker_tag_push }}
+        build-args: |
+          BRANCH=${{ inputs.docker_arg_branch }}
+          VERSION=${{ inputs.docker_arg_version }}
+
         # can have multiple tags is sepparated by a comma

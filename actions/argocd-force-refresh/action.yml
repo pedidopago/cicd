@@ -18,7 +18,7 @@ runs:
     - name: Force-update argocd application
       shell: bash
       run: |
-        curl -X POST "https://${{ inputs.argocd_url }}/api/v1/applications/${{ inputs.app_name }}?refresh=hard" \
+        curl -X POST "https://${{ inputs.argocd_url }}/api/v1/applications/${{ inputs.app_name }}/sync" \
         -H "Authorization: Bearer ${{ inputs.argocd_token }}" \
         -H "Content-Type: application/json" \
         -d '{"syncOptions": ["Replace=true"],"force": true}'
