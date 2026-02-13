@@ -1,0 +1,24 @@
+name: Force ArgoCD Refresh
+description: |
+  Forces a redeployment of ArgoCD tracked resources.
+  This is useful when a new image is pushed to the registry.
+inputs:
+  app_name:
+    description: The ArgoCD App Name
+    required: true
+  argocd_token:
+    description: The ArgoCD Token
+    required: true
+  argocd_url:
+    description: The ArgoCD URL
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Force-update argocd application
+      shell: bash
+      run: |
+        curl -X POST "https://${{ inputs.argocd_url }}/api/v1/applications/${{ inputs.app_name }}?refresh=hard" \
+        -H "Authorization: Bearer ${{ inputs.argocd_token }}" \
+        -H "Content-Type: application/json" \
+        -d '{"syncOptions": ["Replace=true"],"force": true}'
