@@ -2,10 +2,6 @@ name: Docker Build and Push
 description: |
   Builds and pushes a docker image.
 inputs:
-  build_strategy:
-    required: true
-    description: The build strategy to use (docker|aws).
-    default: docker
   docker_registry:
     required: false
     description: |
