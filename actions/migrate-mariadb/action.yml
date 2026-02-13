@@ -16,7 +16,7 @@ runs:
     - name: Install migrate-cli
       shell: bash
       run: |
-        go install github.com/pedidopago/migrate-cli/cmd/migrate-mariadb@latest
+        go install github.com/pedidopago/migrate-cli/cmd/migrate-mariadb@master
     - name: Migrate
       shell: bash
       run: |
