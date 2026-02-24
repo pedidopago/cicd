@@ -89,23 +89,20 @@ jobs:
       - name: Docker Login
         uses: docker/login-action@v2
         with:
-          registry: ${{ inputs.docker_registry }}
-          username: ${{ inputs.docker_username }}
-          password: ${{ inputs.docker_password }}
-      - name: Get current date
-        id: date
-        shell: bash
-        run: echo "date=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_OUTPUT
+          registry: ${{ inputs.staging_docker_registry }}
+          username: ${{ secrets.STAGING_DOCKER_USERNAME }}
+          password: ${{ secrets.STAGING_DOCKER_PASSWORD }}
       - name: Docker Build and Push
         uses: docker/build-push-action@v4
         with:
           context: "."
           push: true
-          tags: ${{ inputs.docker_registry }}/${{ inputs.image_name }}:${{ inputs.version_tag_full }},${{ inputs.docker_registry }}/${{ inputs.image_name }}:${{ inputs.version_tag_short }}
+          tags: ${{ inputs.staging_docker_registry }}/${{ inputs.staging_image_name }}:${{ env.STAGING_TAG }},${{ inputs.staging_docker_registry }}/${{ inputs.staging_image_name }}:staging
           build-args: |
             BRANCH=${{ github.ref }}
             VERSION=${{ github.sha }}
-            BUILD_DATE=${{ steps.date.outputs.date }}
+            GIT_USER=${{ secrets.PPGITHUB_USER }}
+            GIT_TOKEN=${{ secrets.PPGITHUB_TOKEN }}
   deploy_staging:
     runs-on: ubuntu-latest
     needs: docker_staging
