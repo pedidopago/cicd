@@ -41,18 +41,9 @@ runs:
         # ponytail: no-op guard so a rerun with nothing to commit doesn't fail the job
         git diff --cached --quiet && { echo "nothing to commit"; exit 0; }
         git commit -m "$MSG"
-        echo "::group::debug: git auth config"
-        git config --local --get-regexp '^http\.' || echo "no http.* local config"
-        git config --global --get-regexp -i insteadof || echo "no insteadOf"
-        echo "::endgroup::"
-        echo "::group::debug: token installation identity"
-        curl -s -H "Authorization: token ${TOKEN}" https://api.github.com/installation/repositories \
-          | grep -m1 '"full_name"' || echo "identity check failed"
-        echo "::endgroup::"
-        # ponytail: actions/checkout persists github-actions[bot] creds as an http
-        # extraheader; GitHub honors it over the URL token, so the push would act as
-        # the bot (not a bypass actor). Force-clear it for the push command itself.
-        git config --local --unset-all http."https://github.com/".extraheader || true
+        # actions/checkout persists github-actions[bot] creds as an http extraheader
+        # that GitHub honors over the URL token, so the push would act as the bot (not
+        # a ruleset bypass actor). Clear it for this push so we authenticate as the App.
         git \
           -c http."https://github.com/".extraheader= \
           push "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${BRANCH}"
