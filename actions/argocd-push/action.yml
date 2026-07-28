@@ -41,4 +41,8 @@ runs:
         # ponytail: no-op guard so a rerun with nothing to commit doesn't fail the job
         git diff --cached --quiet && { echo "nothing to commit"; exit 0; }
         git commit -m "$MSG"
+        # ponytail: actions/checkout persists github-actions[bot] creds as an http
+        # extraheader; GitHub honors it over the URL token, so the push would act as
+        # the bot (not a bypass actor). Drop it so we push as the App.
+        git config --local --unset-all http."https://github.com/".extraheader || true
         git push "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${BRANCH}"
