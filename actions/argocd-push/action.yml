@@ -1,0 +1,44 @@
+name: ArgoCD Push
+description: |
+  Commits and pushes ArgoCD/kustomize changes back to a ruleset-protected
+  branch. Mints a GitHub App installation token so the push acts as the App
+  (which must be in the branch ruleset's bypass list) instead of
+  github-actions[bot], whose direct pushes are rejected.
+inputs:
+  app_id:
+    description: GitHub App ID (org secret, e.g. ARGOCD_PUSHER_APP_ID)
+    required: true
+  private_key:
+    description: GitHub App private key (org secret, e.g. ARGOCD_PUSHER_PRIVATE_KEY)
+    required: true
+  branch:
+    description: Branch to push to
+    required: true
+    default: ${{ github.ref_name }}
+  commit_message:
+    description: Commit message
+    required: true
+    default: update kustomize image tags
+runs:
+  using: composite
+  steps:
+    - name: Mint App token
+      id: token
+      uses: actions/create-github-app-token@v2
+      with:
+        app-id: ${{ inputs.app_id }}
+        private-key: ${{ inputs.private_key }}
+    - name: Commit & push
+      shell: bash
+      env:
+        TOKEN: ${{ steps.token.outputs.token }}
+        BRANCH: ${{ inputs.branch }}
+        MSG: ${{ inputs.commit_message }}
+      run: |
+        git config --local user.email "argocd-pusher[bot]@users.noreply.github.com"
+        git config --local user.name "argocd-pusher[bot]"
+        git add -A
+        # ponytail: no-op guard so a rerun with nothing to commit doesn't fail the job
+        git diff --cached --quiet && { echo "nothing to commit"; exit 0; }
+        git commit -m "$MSG"
+        git push "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${BRANCH}"
